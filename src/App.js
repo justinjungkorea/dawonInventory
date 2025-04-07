@@ -27,35 +27,35 @@ function App() {
       const API_CERT_KEY = process.env.REACT_APP_ECOUNT_API_CERT_KEY;
       const LAN_TYPE = 'ko-KR';
   
-      // // 1. ZONE 조회
-      // const zoneRes = await fetch('https://oapi.ecount.com/OAPI/V2/Zone', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ COM_CODE }),
-      // });
-      // const ZONE = (await zoneRes.json())?.Data?.ZONE;
-      // if (!ZONE) throw new Error('ZONE 조회 실패');
-      // else console.log('ZONE : ', ZONE);
+      // 1. ZONE 조회
+      const zoneRes = await fetch('https://oapi.ecount.com/OAPI/V2/Zone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ COM_CODE }),
+      });
+      const ZONE = (await zoneRes.json())?.Data?.ZONE;
+      if (!ZONE) throw new Error('ZONE 조회 실패');
+      else console.log('ZONE : ', ZONE);
   
-      // // 2. 로그인
-      // const loginRes = await fetch(`https://oapi${ZONE}.ecount.com/OAPI/V2/OAPILogin`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     COM_CODE,
-      //     USER_ID,
-      //     API_CERT_KEY,
-      //     LAN_TYPE,
-      //     ZONE,
-      //   }),
-      // });
+      // 2. 로그인
+      const loginRes = await fetch(`https://oapi${ZONE}.ecount.com/OAPI/V2/OAPILogin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          COM_CODE,
+          USER_ID,
+          API_CERT_KEY,
+          LAN_TYPE,
+          ZONE,
+        }),
+      });
   
-      // const SESSION_ID = (await loginRes.json())?.Data?.Datas?.SESSION_ID;
-      // if (!SESSION_ID) throw new Error('로그인 실패');
-      // else console.log('SESSION ID : ', SESSION_ID);
+      const SESSION_ID = (await loginRes.json())?.Data?.Datas?.SESSION_ID;
+      if (!SESSION_ID) throw new Error('로그인 실패');
+      else console.log('SESSION ID : ', SESSION_ID);
 
-      const ZONE = 'cb';
-      const SESSION_ID = process.env.REACT_APP_SESSION_ID;
+      // const ZONE = 'cb';
+      // const SESSION_ID = process.env.REACT_APP_SESSION_ID;
   
       // 3. 재고현황 조회
       const BASE_DATE = new Date().toISOString().slice(0, 10).replace(/-/g, '');
