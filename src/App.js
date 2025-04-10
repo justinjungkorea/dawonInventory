@@ -1,31 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, CircularProgress, Typography
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  CircularProgress,
+  Box
 } from '@mui/material';
 
 function App() {
-  const [stocks, setStocks] = useState([]);
+  const [stocks, setStocks] = useState([]); // stocks 상태 초기화
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updatedAt, setUpdatedAt] = useState('');
+  const [lastUpdated, setLastUpdated] = useState('');
 
   const fetchStockData = async () => {
     try {
       setLoading(true);
       setError('');
 
-      const res = await fetch('https://script.google.com/macros/s/AKfycbz_3srpVSs3r1TUEe9gpN7uHhAKdivcrPq4R_B0TxuQ8VaK6KYFmpyycfTYhDHPSImC/exec');
-      const data = await res.json();
+      const url = process.env.REACT_APP_INVENTORY_URL;
+      const response = await fetch(url);
+      const data = await response.json(); // JSON 응답으로 처리
 
-      // 📅 업데이트 시간 추출
-      setUpdatedAt(data.updatedAt);
+      console.log('API 응답 데이터:', data); // 응답 데이터를 로깅하여 확인
 
-      // 📦 데이터
-      setStocks(data.items);
+      // 유효한 데이터가 있을 경우 상태 업데이트
+      if (data && data.items && Array.isArray(data.items)) {
+        setStocks(data.items); // items 배열을 stocks로 설정
+        setLastUpdated(data.updatedAt); // 마지막 업데이트 시간 설정
+      } else {
+        throw new Error('유효하지 않은 데이터');
+      }
+
     } catch (err) {
       console.error(err);
-      setError('데이터 가져오기 실패: ' + err.message);
+      setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -41,47 +51,43 @@ function App() {
         📦 재고 현황
       </Typography>
 
-      {updatedAt && (
-        <Typography variant="subtitle1" style={{ marginBottom: '1rem' }}>
-          마지막 업데이트: {updatedAt}
-        </Typography>
-      )}
-
       {loading ? (
         <CircularProgress />
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <TableContainer component={Paper} style={{ overflowX: 'auto' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell style={{ whiteSpace: 'nowrap' }}>품목명</TableCell>
-                <TableCell style={{ whiteSpace: 'nowrap' }}>브랜드</TableCell>
-                <TableCell style={{ whiteSpace: 'nowrap' }}>원산지</TableCell>
-                <TableCell style={{ whiteSpace: 'nowrap' }} align="right">중량 (kg)</TableCell>
-                <TableCell style={{ whiteSpace: 'nowrap' }} align="right">매입단가 (원)</TableCell>
-                <TableCell style={{ whiteSpace: 'nowrap' }}>이력번호</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {stocks.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell style={{ whiteSpace: 'nowrap' }}>{item.name}</TableCell>
-                  <TableCell style={{ whiteSpace: 'nowrap' }}>{item.brand}</TableCell>
-                  <TableCell style={{ whiteSpace: 'nowrap' }}>{item.origin}</TableCell>
-                  <TableCell style={{ whiteSpace: 'nowrap' }} align="right">
-                    {parseFloat(item.qty).toLocaleString()}
-                  </TableCell>
-                  <TableCell style={{ whiteSpace: 'nowrap' }} align="right">
-                    {parseFloat(item.price).toLocaleString()}
-                  </TableCell>
-                  <TableCell style={{ whiteSpace: 'nowrap' }}>{item.trace}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <div>
+          <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+            마지막 업데이트: {lastUpdated}
+          </Typography>
+
+          <Grid container spacing={3}>
+            {stocks.length > 0 ? (
+              stocks.map((item, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card variant="outlined">
+                    <CardContent sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6">{item.name}</Typography>
+                        <Typography color="textSecondary">{item.brand}</Typography>
+                        <Typography color="textSecondary">{item.origin}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Typography variant="h6" sx={{ fontSize: '1.5rem' }}>
+                          {parseFloat(item.qty).toLocaleString()} kg
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Grid item xs={12}>
+                <Typography align="center">데이터가 없습니다.</Typography>
+              </Grid>
+            )}
+          </Grid>
+        </div>
       )}
     </div>
   );
