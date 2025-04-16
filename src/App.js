@@ -42,7 +42,13 @@ function App() {
   };
 
   useEffect(() => {
-    fetchStockData();
+    fetchStockData(); // 초기 1회 호출
+  
+    const interval = setInterval(() => {
+      fetchStockData();
+    }, 60000);
+  
+    return () => clearInterval(interval); // 언마운트 시 인터벌 정리
   }, []);
 
   return (
@@ -71,6 +77,7 @@ function App() {
                         <Typography variant="h6">{item.name}</Typography>
                         <Typography color="textSecondary">{item.brand}</Typography>
                         <Typography color="textSecondary">{item.origin}</Typography>
+                        <Typography color="textSecondary">{item.trace || 'N/A'}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Typography variant="h6" sx={{ fontSize: '1.5rem' }}>
