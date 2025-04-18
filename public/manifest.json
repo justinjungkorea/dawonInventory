@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "재고현황",
+  "name": "다원축산 재고현황",
   "icons": [
     {
       "src": "favicon.ico",
