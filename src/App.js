@@ -27,7 +27,8 @@ function App() {
 
       // 유효한 데이터가 있을 경우 상태 업데이트
       if (data && data.items && Array.isArray(data.items)) {
-        setStocks(data.items); // items 배열을 stocks로 설정
+        const sortedItems = [...data.items].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+        setStocks(sortedItems);
         setLastUpdated(data.updatedAt); // 마지막 업데이트 시간 설정
       } else {
         throw new Error('유효하지 않은 데이터');
