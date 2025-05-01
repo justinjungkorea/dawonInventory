@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -9,48 +9,50 @@ import {
 } from '@mui/material';
 
 function App() {
-  const [stocks, setStocks] = useState([]); // stocks 상태 초기화
+  const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState('');
 
-  const fetchStockData = async () => {
+  // ✅ useCallback으로 감싸서 useEffect 의존성 문제 해결
+  const fetchStockData = useCallback(async (initial = false) => {
     try {
-      setLoading(true);
+      if (initial) setLoading(true);
       setError('');
 
       const url = process.env.REACT_APP_INVENTORY_URL;
       const response = await fetch(url);
-      const data = await response.json(); // JSON 응답으로 처리
+      const data = await response.json();
 
-      console.log('API 응답 데이터:', data); // 응답 데이터를 로깅하여 확인
-
-      // 유효한 데이터가 있을 경우 상태 업데이트
       if (data && data.items && Array.isArray(data.items)) {
-        const sortedItems = [...data.items].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-        setStocks(sortedItems);
-        setLastUpdated(data.updatedAt); // 마지막 업데이트 시간 설정
+        if (data.updatedAt !== lastUpdated) {
+          const sortedItems = [...data.items].sort((a, b) =>
+            a.name.localeCompare(b.name, 'ko')
+          );
+          setStocks(sortedItems);
+          setLastUpdated(data.updatedAt);
+        }
       } else {
         throw new Error('유효하지 않은 데이터');
       }
-
     } catch (err) {
       console.error(err);
       setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
     } finally {
-      setLoading(false);
+      if (initial) setLoading(false);
     }
-  };
+  }, [lastUpdated]); // ← lastUpdated가 변경될 때만 fetchStockData 재생성
 
+  // ✅ 데이터 초기 로딩 및 1분마다 갱신
   useEffect(() => {
-    fetchStockData(); // 초기 1회 호출
-  
+    fetchStockData(true);
+
     const interval = setInterval(() => {
-      fetchStockData();
+      fetchStockData(false);
     }, 60000);
-  
-    return () => clearInterval(interval); // 언마운트 시 인터벌 정리
-  }, []);
+
+    return () => clearInterval(interval);
+  }, [fetchStockData]); // ← useCallback 된 함수 사용
 
   return (
     <div style={{ padding: '2rem' }}>
