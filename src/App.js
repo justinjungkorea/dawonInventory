@@ -14,10 +14,10 @@ function App() {
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState('');
 
-  // ✅ useCallback으로 감싸서 useEffect 의존성 문제 해결
+  // 데이터 조회 함수 (초기 진입 시에만 로딩 화면 표시)
   const fetchStockData = useCallback(async (initial = false) => {
     try {
-      if (initial) setLoading(true);
+      if (initial) setLoading(true); // 초기 진입만 로딩 표시
       setError('');
 
       const url = process.env.REACT_APP_INVENTORY_URL;
@@ -39,20 +39,20 @@ function App() {
       console.error(err);
       setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
     } finally {
-      if (initial) setLoading(false);
+      if (initial) setLoading(false); // 초기 로딩 종료
     }
-  }, [lastUpdated]); // ← lastUpdated가 변경될 때만 fetchStockData 재생성
+  }, [lastUpdated]);
 
-  // ✅ 데이터 초기 로딩 및 1분마다 갱신
+  // 최초 진입 + 1분마다 백그라운드 갱신
   useEffect(() => {
-    fetchStockData(true);
+    fetchStockData(true); // 초기 로딩
 
     const interval = setInterval(() => {
-      fetchStockData(false);
+      fetchStockData(false); // 이후 백그라운드 갱신
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [fetchStockData]); // ← useCallback 된 함수 사용
+  }, [fetchStockData]);
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -82,9 +82,12 @@ function App() {
                         <Typography color="textSecondary">{item.origin}</Typography>
                         <Typography color="textSecondary">{item.trace || 'N/A'}</Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end' }}>
                         <Typography variant="h6" sx={{ fontSize: '1.5rem' }}>
                           {parseFloat(item.qty).toLocaleString()} kg
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {parseFloat(item.price).toLocaleString()} 원
                         </Typography>
                       </Box>
                     </CardContent>
