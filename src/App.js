@@ -14,10 +14,9 @@ function App() {
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState('');
 
-  // 데이터 조회 함수 (초기 진입 시에만 로딩 화면 표시)
   const fetchStockData = useCallback(async (initial = false) => {
     try {
-      if (initial) setLoading(true); // 초기 진입만 로딩 표시
+      if (initial) setLoading(true);
       setError('');
 
       const url = process.env.REACT_APP_INVENTORY_URL;
@@ -39,16 +38,15 @@ function App() {
       console.error(err);
       setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
     } finally {
-      if (initial) setLoading(false); // 초기 로딩 종료
+      if (initial) setLoading(false);
     }
   }, [lastUpdated]);
 
-  // 최초 진입 + 1분마다 백그라운드 갱신
   useEffect(() => {
-    fetchStockData(true); // 초기 로딩
+    fetchStockData(true); // 초기 로딩만 로딩 상태 사용
 
     const interval = setInterval(() => {
-      fetchStockData(false); // 이후 백그라운드 갱신
+      fetchStockData(false); // 이후에는 백그라운드 조용히 갱신
     }, 60000);
 
     return () => clearInterval(interval);
@@ -65,7 +63,7 @@ function App() {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <div>
+        <>
           <Typography variant="subtitle1" color="textSecondary" gutterBottom>
             마지막 업데이트: {lastUpdated}
           </Typography>
@@ -100,7 +98,7 @@ function App() {
               </Grid>
             )}
           </Grid>
-        </div>
+        </>
       )}
     </div>
   );
