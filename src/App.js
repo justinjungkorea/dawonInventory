@@ -10,43 +10,51 @@ import {
 
 function App() {
   const [stocks, setStocks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true); // 초기 진입용
+  const [error, setError] = useState('');        // 초기 진입용
   const [lastUpdated, setLastUpdated] = useState('');
 
   const fetchStockData = useCallback(async (initial = false) => {
-    try {
-      if (initial) setLoading(true);
+  try {
+    if (initial) {
+      setLoading(true);
       setError('');
-
-      const url = process.env.REACT_APP_INVENTORY_URL;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data && data.items && Array.isArray(data.items)) {
-        if (data.updatedAt !== lastUpdated) {
-          const sortedItems = [...data.items].sort((a, b) =>
-            a.name.localeCompare(b.name, 'ko')
-          );
-          setStocks(sortedItems);
-          setLastUpdated(data.updatedAt);
-        }
-      } else {
-        throw new Error('유효하지 않은 데이터');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
-    } finally {
-      if (initial) setLoading(false);
     }
-  }, [lastUpdated]);
+
+    const url = process.env.REACT_APP_INVENTORY_URL;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data && data.items && Array.isArray(data.items)) {
+      // 기존 상태 값 대신 useRef 없이도 직접 참조 (정상 작동)
+      if (data.updatedAt !== lastUpdated) {
+        const sortedItems = [...data.items].sort((a, b) =>
+          a.name.localeCompare(b.name, 'ko')
+        );
+        setStocks(sortedItems);
+        setLastUpdated(data.updatedAt);
+      }
+    } else {
+      if (initial) throw new Error('유효하지 않은 데이터');
+    }
+  } catch (err) {
+    console.error(err);
+    if (initial) {
+      setError('데이터를 불러오는 중 오류가 발생했습니다: ' + err.message);
+    }
+  } finally {
+    if (initial) {
+      setLoading(false);
+    }
+  }
+}, []);
 
   useEffect(() => {
-    fetchStockData(true); // 초기 로딩만 로딩 상태 사용
+    fetchStockData(true); // 초기만 로딩 표시
 
     const interval = setInterval(() => {
-      fetchStockData(false); // 이후에는 백그라운드 조용히 갱신
+      fetchStockData(false); // 이후는 백그라운드에서 조용히 업데이트
+      console.log("UPDATE!!!");
     }, 60000);
 
     return () => clearInterval(interval);
