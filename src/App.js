@@ -25,10 +25,10 @@ function App() {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (data && data.items && Array.isArray(data.items)) {
+    if (data && data.data && Array.isArray(data.data)) {
       // 기존 상태 값 대신 useRef 없이도 직접 참조 (정상 작동)
       if (data.updatedAt !== lastUpdated) {
-        const sortedItems = [...data.items].sort((a, b) =>
+        const sortedItems = [...data.data].sort((a, b) =>
           a.name.localeCompare(b.name, 'ko')
         );
         setStocks(sortedItems);
